@@ -26,13 +26,13 @@ trait cPanelFunctions{
     }
 
     public function checkConnection(){
-    	$result = $this->listAccounts();
+    	$whm = $this->query('listaccts', ['api.version' => 1]);
 
-    	if(isset($result['error'])){
-    		return $result;
-    	}else{
-    		return TRUE;
-    	}
+        if(isset($whm->cpanelresult->error)){
+            return FALSE;
+        }else{
+            return TRUE;
+        }
     }
 
     public function terminateAccount($username = ''){
@@ -40,16 +40,24 @@ trait cPanelFunctions{
 			throw new Exception("Usuário é obrigatório", 1);
 		}
 
-		$whm = $this->query('removeacct', ['user' => $username]);
-		if(isset($whm->status)){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$username.'" não existe.'
-            ];
+		if($this->checkConnection()){
+			$whm = $this->query('removeacct', ['user' => $username]);
+			if(isset($whm->status)){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$username.'" não existe.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'A conta "'.$username.'" foi removida.'
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'A conta "'.$username.'" foi removida.'
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -59,17 +67,25 @@ trait cPanelFunctions{
 			throw new Exception("Usuário é obrigatório", 1);
 		}
 
-		$whm = $this->query('unsuspendacct', ['user' => $username]);
+		if($this->checkConnection()){
+			$whm = $this->query('unsuspendacct', ['user' => $username]);
 
-		if(isset($whm->status)){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$username.'" não existe.'
-            ];
+			if(isset($whm->status)){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$username.'" não existe.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'A conta "'.$username.'" foi reativada.'
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'A conta "'.$username.'" foi reativada.'
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -85,17 +101,25 @@ trait cPanelFunctions{
 			$args['reason'] = $param['reason'];
 		}
 
-		$whm = $this->query('suspendacct', $args);
+		if($this->checkConnection()){
+			$whm = $this->query('suspendacct', $args);
 
-		if(isset($whm->status)){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$param['user'].'" não existe.'
-            ];
+			if(isset($whm->status)){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$param['user'].'" não existe.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'A conta "'.$param['user'].'" foi suspensa.'
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'A conta "'.$param['user'].'" foi suspensa.'
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -140,17 +164,25 @@ trait cPanelFunctions{
 			$args['QUOTA'] = $param['disk'];
 		}
 
-		$whm = $this->query('modifyacct', $args);
+		if($this->checkConnection()){
+			$whm = $this->query('modifyacct', $args);
 
-		if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$param['user'].'" não pode ser alterada.'
-            ];
+			if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$param['user'].'" não pode ser alterada.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'A conta "'.$param['user'].'" foi alterada.',
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'A conta "'.$param['user'].'" foi alterada.',
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -177,20 +209,27 @@ trait cPanelFunctions{
 	        'domain' => $param['domain'],
 	    ];
 
-	    $whm = $this->query('createacct', $args);
+	    if($this->checkConnection()){
+		    $whm = $this->query('createacct', $args);
 
-	    if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$param['user'].'" já existe / não pode ser criada.'
-            ];
+		    if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$param['user'].'" já existe / não pode ser criada.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'A conta "'.$param['user'].'" foi criada.',
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'A conta "'.$param['user'].'" foi criada.',
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
-
 		//return $whm;
 	}
 
@@ -216,18 +255,26 @@ trait cPanelFunctions{
 	        'password' => $param['password'],
 	    ];
 
-	    $whm = $this->query('passwd', $args);
+	    if($this->checkConnection()){
+		    $whm = $this->query('passwd', $args);
 
-	    if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A senha que você escolheu é muito fraca.'
-            ];
+		    if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A senha que você escolheu é muito fraca.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'new_password' => $param['password'],
+	                'verbose' => 'A senha da conta "'.$param['user'].'" foi alterada.',
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'new_password' => $param['password'],
-                'verbose' => 'A senha da conta "'.$param['user'].'" foi alterada.',
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -241,17 +288,25 @@ trait cPanelFunctions{
 			throw new Exception("Tráfego é obrigatório", 1);
 		}
 
-		$whm = $this->query('limitbw', ['api.version' => 1, 'user' => $username, 'bwlimit' => $bw]);
+		if($this->checkConnection()){
+			$whm = $this->query('limitbw', ['api.version' => 1, 'user' => $username, 'bwlimit' => $bw]);
 
-		if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'Você não tem acesso a conta "'.$username.'".'
-            ];
+			if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'Você não tem acesso a conta "'.$username.'".'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'Limite de banda alterada.'
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'Limite de banda alterada.'
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -265,17 +320,25 @@ trait cPanelFunctions{
 			throw new Exception("Disco é obrigatório", 1);
 		}
 
-		$whm = $this->query('editquota', ['api.version' => 1, 'user' => $username, 'quota' => $disk]);
-		
-		if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'Você não tem acesso a conta "'.$username.'".'
-            ];
+		if($this->checkConnection()){
+			$whm = $this->query('editquota', ['api.version' => 1, 'user' => $username, 'quota' => $disk]);
+			
+			if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'Você não tem acesso a conta "'.$username.'".'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'Espaço em Disco alterado.'
+	            ];
+			}
 		}else{
 			return (object) [
-                'status' => 1,
-                'verbose' => 'Espaço em Disco alterado.'
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -285,26 +348,34 @@ trait cPanelFunctions{
 			throw new Exception("Usuário é obrigatório", 1);
 		}
 
-		$whm = $this->query('accountsummary', ['api.version' => 1, 'user' => $username]);
+		if($this->checkConnection()){
+			$whm = $this->query('accountsummary', ['api.version' => 1, 'user' => $username]);
 
-		if($whm->metadata->result == 0){
-			return (object) [
-                'status' => 0,
-                'verbose' => 'A conta "'.$username.'" não existe.'
-            ];
+			if($whm->metadata->result == 0){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'A conta "'.$username.'" não existe.'
+	            ];
+			}else{
+				return (object) [
+	                'domain' => $whm->data->acct[0]->domain,
+	                'suspended' => $whm->data->acct[0]->suspended,
+	                'startdate_unix' => $whm->data->acct[0]->unix_startdate,
+	                'email_accounts' => $whm->data->acct[0]->maxpop,
+	                'sql_databases' => $whm->data->acct[0]->maxsql,
+	                'domains_add' => $whm->data->acct[0]->maxaddons,
+	                'subdomains' => $whm->data->acct[0]->maxsub,
+	                'user' => $whm->data->acct[0]->user,
+	                'plan' => $whm->data->acct[0]->plan,
+	                'diskused' => $whm->data->acct[0]->diskused,
+	                'disklimit' => $whm->data->acct[0]->disklimit,
+	            ];
+			}
 		}else{
 			return (object) [
-                'domain' => $whm->data->acct[0]->domain,
-                'suspended' => $whm->data->acct[0]->suspended,
-                'startdate_unix' => $whm->data->acct[0]->unix_startdate,
-                'email_accounts' => $whm->data->acct[0]->maxpop,
-                'sql_databases' => $whm->data->acct[0]->maxsql,
-                'domains_add' => $whm->data->acct[0]->maxaddons,
-                'subdomains' => $whm->data->acct[0]->maxsub,
-                'user' => $whm->data->acct[0]->user,
-                'plan' => $whm->data->acct[0]->plan,
-                'diskused' => $whm->data->acct[0]->diskused,
-                'disklimit' => $whm->data->acct[0]->disklimit,
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
@@ -314,14 +385,108 @@ trait cPanelFunctions{
 	 */
 
 	public function listPackages(){
-		$whm = $this->query('listpkgs', ['api.version' => 1]);
+		if($this->checkConnection()){
+			$whm = $this->query('listpkgs', ['api.version' => 1]);
 
-		if(isset($whm->metadata->result) && $whm->metadata->result == 1){
-			return $whm->data->pkg;
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+				return $whm->data->pkg;
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'Acesso Negado.'
+	            ];
+			}
 		}else{
 			return (object) [
                 'status' => 0,
-                'verbose' => 'Acesso Negado.'
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
+            ];
+		}
+	}
+
+	public function addPackage($param = null){
+		if(empty($param) || !is_array($param))
+		{
+			throw new Exception("Parâmetros inválidos.", 1);
+		}
+
+		if(!isset($param['name']) || empty($param['name']))
+		{
+			throw new Exception("O campo 'Descricao' é obrigatório.", 1);
+		}
+
+		if(!isset($param['disk']) || empty($param['disk']))
+		{
+			throw new Exception("O campo 'Espaço em Disco' é obrigatório.", 1);
+		}
+
+		if(!isset($param['bwlimit']) || empty($param['bwlimit']))
+		{
+			throw new Exception("O campo 'Tráfego' é obrigatório.", 1);
+		}
+
+		if(isset($param['ip'])){
+			$args['ip'] = $param['ip'];
+		}
+
+		if(isset($param['cgi'])){
+			$args['cgi'] = $param['cgi'];
+		}
+
+		if(isset($param['frontpage'])){
+			$args['frontpage'] = $param['frontpage'];
+		}
+
+		if(isset($param['theme'])){
+			$args['cpmod'] = $param['theme'];
+		}
+
+		if(isset($param['maxpop'])){
+			$args['maxpop'] = $param['maxpop'];
+		}
+
+		if(isset($param['maxsql'])){
+			$args['maxsql'] = $param['maxsql'];
+		}
+
+		if(isset($param['maxaddon'])){
+			$args['maxaddon'] = $param['maxaddon'];
+		}
+
+		if(isset($param['maxpark'])){
+			$args['maxpark'] = $param['maxpark'];
+		}
+
+		if(isset($param['hasshell'])){
+			$args['hasshell'] = $param['hasshell'];
+		}
+
+		$args['api.version'] = 1;
+		$args['name'] = $param['name'];
+		$args['quota'] = $param['disk'];
+		$args['bwlimit'] = $param['bwlimit'];
+		$args['language'] = 'pt_br';
+
+		if($this->checkConnection()){
+			$whm = $this->query('addpkg', $args);
+
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$param['name'].'" foi configurado.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$param['name'].'" já existe.'
+	            ];
+			}
+		}else{
+			return (object) [
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
             ];
 		}
 	}
