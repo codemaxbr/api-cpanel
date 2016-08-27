@@ -490,4 +490,192 @@ trait cPanelFunctions{
             ];
 		}
 	}
+
+	public function editPackage($param = null){
+		if(empty($param) || !is_array($param))
+		{
+			throw new Exception("Parâmetros inválidos.", 1);
+		}
+
+		if(!isset($param['name']) || empty($param['name']))
+		{
+			throw new Exception("O campo 'Descricao' é obrigatório.", 1);
+		}
+
+		if(!isset($param['disk']) || empty($param['disk']))
+		{
+			throw new Exception("O campo 'Espaço em Disco' é obrigatório.", 1);
+		}
+
+		if(!isset($param['bwlimit']) || empty($param['bwlimit']))
+		{
+			throw new Exception("O campo 'Tráfego' é obrigatório.", 1);
+		}
+
+		if(isset($param['ip'])){
+			$args['ip'] = $param['ip'];
+		}
+
+		if(isset($param['cgi'])){
+			$args['cgi'] = $param['cgi'];
+		}
+
+		if(isset($param['frontpage'])){
+			$args['frontpage'] = $param['frontpage'];
+		}
+
+		if(isset($param['theme'])){
+			$args['cpmod'] = $param['theme'];
+		}
+
+		if(isset($param['maxpop'])){
+			$args['maxpop'] = $param['maxpop'];
+		}
+
+		if(isset($param['maxsql'])){
+			$args['maxsql'] = $param['maxsql'];
+		}
+
+		if(isset($param['maxaddon'])){
+			$args['maxaddon'] = $param['maxaddon'];
+		}
+
+		if(isset($param['maxpark'])){
+			$args['maxpark'] = $param['maxpark'];
+		}
+
+		if(isset($param['hasshell'])){
+			$args['hasshell'] = $param['hasshell'];
+		}
+
+		$args['api.version'] = 1;
+		$args['name'] = $param['name'];
+		$args['quota'] = $param['disk'];
+		$args['bwlimit'] = $param['bwlimit'];
+		$args['language'] = 'pt_br';
+
+		if($this->checkConnection()){
+			$whm = $this->query('editpkg', $args);
+
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$param['name'].'" foi re-configurado.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'Não foi possível fazer as alterações do plano "'.$param['name'].'".'
+	            ];
+			}
+		}else{
+			return (object) [
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
+            ];
+		}
+	}
+
+	public function deletePackage($pkg = ''){
+		if(empty($pkg)){
+			throw new Exception("Plano é obrigatório", 1);
+		}
+
+		if($this->checkConnection()){
+			$whm = $this->query('killpkg', ['api.version' => 1, 'pkgname' => $this->whm_user.'_'.$pkg]);
+
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$pkg.'" foi removido.'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$pkg.'" não existe.'
+	            ];
+			}
+		}else{
+			return (object) [
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
+            ];
+		}
+	}
+
+	public function getPackage($pkg = ''){
+		if(empty($pkg)){
+			throw new Exception("Plano é obrigatório", 1);
+		}
+
+		if($this->checkConnection()){
+			$whm = $this->query('getpkginfo', ['api.version' => 1, 'pkg' => $this->whm_user.'_'.$pkg]);
+			
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+
+				return (object) [
+	                'disk' => $whm->data->pkg->QUOTA,
+	                'bwlimit' => $whm->data->pkg->BWLIMIT,
+	                'email_accounts' => ($whm->data->pkg->MAXPOP == NULL) ? 'unlimited' : $whm->data->pkg->MAXPOP,
+	                'domains_add' => ($whm->data->pkg->MAXADDON == NULL) ? 'unlimited' : $whm->data->pkg->MAXADDON,
+	                'theme' => $whm->data->pkg->CPMOD,
+	                'sqls' => ($whm->data->pkg->MAXSQL == NULL) ? 'unlimited' : $whm->data->pkg->MAXSQL,
+	                'domains_park' => ($whm->data->pkg->MAXPARK == NULL) ? 'unlimited' : $whm->data->pkg->MAXPARK,
+	                'acess_shell' => ($whm->data->pkg->HASSHELL == 1) ? 'yes' : 'no',
+	                'cgi' => ($whm->data->pkg->CGI == 1) ? 'yes' : 'no',
+	                'ip' => ($whm->data->pkg->IP == 1) ? 'yes' : 'no',
+	                'frontpage' => ($whm->data->pkg->FRONTPAGE == 1) ? 'yes' : 'no',
+	                'language' => $whm->data->pkg->LANG,
+	                'subdomains' => ($whm->data->pkg->MAXSUB == NULL) ? 'unlimited' : $whm->data->pkg->MAXSUB,
+	            ];
+
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O plano "'.$pkg.'" não existe.'
+	            ];
+			}
+		}else{
+			return (object) [
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
+            ];
+		}
+	}
+
+	public function changePackage($username = '', $pkg = ''){
+
+		if(empty($username)){
+			throw new Exception('O campo "Usuário" é obrigatório', 1);
+		}
+
+		if(empty($pkg)){
+			throw new Exception('O campo "Plano" é obrigatório', 1);
+		}
+
+		if($this->checkConnection()){
+			$whm = $this->query('changepackage', ['api.version' => 1, 'user' => $username, 'pkg' => $this->whm_user.'_'.$pkg]);
+
+			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
+				return (object) [
+	                'status' => 1,
+	                'verbose' => 'Upgrade/Downgrade Completo para "'.$username.'"'
+	            ];
+			}else{
+				return (object) [
+	                'status' => 0,
+	                'verbose' => 'O Plano "'.$pkg.'" ou Usuário "'.$username.'" não existe.'
+	            ];
+			}
+		}else{
+			return (object) [
+                'status' => 0,
+                'error' => 'auth_error',
+                'verbose' => 'Usuário e senha / Chave de acesso incorreta.'
+            ];
+		}
+	}
 }
