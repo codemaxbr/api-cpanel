@@ -1,0 +1,23 @@
+{
+    "name": "codemaxbr/api-cpanel",
+    "description": "API cPanel for PHP",
+    "homepage": "https://github.com/codemaxbr/API-cPanel/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lucas Maia",
+            "email": "lucas.codemax@gmail.com",
+            "homepage": "https://github.com/codemaxbr/"
+        }
+    ],
+    "require": {
+        "php": ">=5.2.0",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-0": {
+            "cPanel": "src/"
+        }
+    }
+}
