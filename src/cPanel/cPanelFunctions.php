@@ -560,7 +560,7 @@ trait cPanelFunctions{
 
 			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
 				return (object) [
-	                'status' => 0,
+	                'status' => 1,
 	                'verbose' => 'O plano "'.$param['name'].'" foi re-configurado.'
 	            ];
 			}else{
@@ -588,7 +588,7 @@ trait cPanelFunctions{
 
 			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
 				return (object) [
-	                'status' => 0,
+	                'status' => 1,
 	                'verbose' => 'O plano "'.$pkg.'" foi removido.'
 	            ];
 			}else{
@@ -617,6 +617,7 @@ trait cPanelFunctions{
 			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
 
 				return (object) [
+					'status' => 1,
 	                'disk' => $whm->data->pkg->QUOTA,
 	                'bwlimit' => $whm->data->pkg->BWLIMIT,
 	                'email_accounts' => ($whm->data->pkg->MAXPOP == NULL) ? 'unlimited' : $whm->data->pkg->MAXPOP,
