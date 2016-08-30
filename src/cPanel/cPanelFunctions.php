@@ -358,6 +358,7 @@ trait cPanelFunctions{
 	            ];
 			}else{
 				return (object) [
+					'status' => 1,
 	                'domain' => $whm->data->acct[0]->domain,
 	                'suspended' => $whm->data->acct[0]->suspended,
 	                'startdate_unix' => $whm->data->acct[0]->unix_startdate,
@@ -473,7 +474,7 @@ trait cPanelFunctions{
 
 			if(isset($whm->metadata->result) && $whm->metadata->result == 1){
 				return (object) [
-	                'status' => 0,
+	                'status' => 1,
 	                'verbose' => 'O plano "'.$param['name'].'" foi configurado.'
 	            ];
 			}else{
