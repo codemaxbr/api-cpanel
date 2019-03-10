@@ -84,7 +84,7 @@ class API{
         //Merge args(apiKey, Format, noJsonCallback)
         $query = http_build_query($args);
 
-        $url = "https://".$this->whm_server.":2087/json-api/";
+        $url = $this->whm_server.":2087/json-api/";
         $url .= $resource . '?' . $query;
 
         return $url;

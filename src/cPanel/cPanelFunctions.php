@@ -483,6 +483,7 @@ trait cPanelFunctions{
 	                'verbose' => 'O plano "'.$param['name'].'" já existe.'
 	            ];
 			}
+
 		}else{
 			return (object) [
                 'status' => 0,
@@ -564,10 +565,13 @@ trait cPanelFunctions{
 	                'verbose' => 'O plano "'.$param['name'].'" foi re-configurado.'
 	            ];
 			}else{
+			    return $whm;
+			    /*
 				return (object) [
 	                'status' => 0,
 	                'verbose' => 'Não foi possível fazer as alterações do plano "'.$param['name'].'".'
 	            ];
+			    */
 			}
 		}else{
 			return (object) [
