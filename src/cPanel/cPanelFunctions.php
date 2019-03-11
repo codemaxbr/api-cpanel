@@ -207,6 +207,8 @@ trait cPanelFunctions{
 			'api.version' => 1,
 	        'username' => $param['user'],
 	        'domain' => $param['domain'],
+            'password' => $param['password'],
+            'plan' => $param['plan'],
 	    ];
 
 	    if($this->checkConnection()){
