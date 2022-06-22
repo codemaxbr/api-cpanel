@@ -1,6 +1,6 @@
 {
     "name": "codemaxbr/api-cpanel",
-    "description": "API cPanel for PHP",
+    "description": "Integration cPanel WHM for PHP",
     "homepage": "https://github.com/codemaxbr/API-cPanel/",
     "type": "library",
     "license": "MIT",
@@ -12,12 +12,23 @@
         }
     ],
     "require": {
-        "php": ">=5.2.0",
-        "ext-curl": "*"
+        "php": ">=7.2",
+        "ext-curl": "*",
+        "php-amqplib/php-amqplib": "^3.2",
+        "bref/bref": "^1.5",
+        "guzzlehttp/guzzle": "^7.0",
+        "vlucas/phpdotenv": "^5.4",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-0": {
             "cPanel": "src/"
-        }
+        },
+        "files": [
+            "src/cPanel/helper.php"
+        ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.1"
     }
 }
